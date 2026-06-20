@@ -41,6 +41,8 @@ let timerId = null;
 let isGameOver = false;
 let isPaused = false; 
 let tutorialFirstMatchDone = false;
+let currentResultType = "clear";
+let currentResultWasNewRecord = false;
 
 // 🌟 初期のゲーム起動時は定位置でスタンバイ
 let rotX = 60;   
@@ -848,7 +850,17 @@ function stopAllSounds() {
     // iPhoneで復帰が重くなることがあるため
 }
 
-function showClearOverlay(finalScore, timeBonus, clearBonus) {
+function showClearOverlay(
+    finalScore,
+    timeBonus,
+    clearBonus,
+    isNewRecord = false
+) {
+    currentResultType = "clear";
+    currentResultWasNewRecord = isNewRecord;
+
+    resetResultOverlayTheme();
+
     setClearOverlayValues(
         finalScore,
         timeBonus,
@@ -856,6 +868,22 @@ function showClearOverlay(finalScore, timeBonus, clearBonus) {
     );
 
     showOverlayWithFade("clear-overlay");
+}
+
+function resetResultOverlayTheme() {
+    const clearCard =
+        document.querySelector(".clear-card");
+
+    const title =
+        document.querySelector(".clear-card h2");
+
+    if (clearCard) {
+        clearCard.classList.remove("timeup-result");
+    }
+
+    if (title) {
+        title.innerText = "CLEAR!";
+    }
 }
 
 function setClearOverlayValues(
@@ -952,7 +980,7 @@ function setClearOverlayValues(
     if (newRecordEl) {
         if (
             !isTutorialMode &&
-            window.lastClearWasNewRecord
+            currentResultWasNewRecord
         ) {
             newRecordEl.innerText =
                 "🏆 NEW RECORD!";
@@ -1024,9 +1052,47 @@ function showExtraUnlockOverlay(callback) {
 }
 
 function showTimeUpOverlay() {
-    setElementText("timeup-score", currentScore);
+    showTimeUpResultOverlay();
+}
 
-    showOverlayWithFade("timeup-overlay");
+function showTimeUpResultOverlay() {
+    currentResultType = "timeup";
+    
+    const clearCard =
+        document.querySelector(".clear-card");
+
+    const title =
+        document.querySelector(".clear-card h2");
+
+    if (clearCard) {
+        clearCard.classList.add("timeup-result");
+    }
+
+    if (title) {
+        title.innerText = "TIME UP";
+    }
+
+    setClearOverlayValues(
+        currentScore,
+        0,
+        0
+    );
+
+    setElementText(
+        "clear-message",
+        "おつかれさまでした"
+    );
+
+    const rankEl =
+        document.getElementById("clear-rank");
+
+    if (rankEl) {
+        rankEl.style.display = "block";
+        rankEl.innerText =
+            getClearRankStars(currentScore);
+    }
+
+    showOverlayWithFade("clear-overlay");
 }
 
 function setElementText(id, text) {
@@ -1111,7 +1177,6 @@ function fadeInBGMVolume(targetVolume = 0.20) {
 
 function hideGameOverlays() {
     const overlays = [
-        "timeup-overlay",
         "clear-overlay",
         "pause-overlay"
     ];
@@ -1234,16 +1299,16 @@ function createShareData(resultType) {
         `${label}\n` +
         `SCORE: ${currentScore} pt\n`;
 
-    if (resultType === "clear") {
-        const finalScore =
-            calculateClearResult().finalScore;
-
-        const rank =
-            getClearRankStars(finalScore);
-
-        shareText +=
-            `RANK: ${rank}\n`;
-    }
+    const rankScore =
+        resultType === "clear"
+            ? calculateClearResult().finalScore
+            : currentScore;
+    
+    const rank =
+        getClearRankStars(rankScore);
+    
+    shareText +=
+        `RANK: ${rank}\n`;
 
     shareText +=
         `BEST: ${highScore} pt\n`;
@@ -1302,6 +1367,10 @@ function shareToX(shareText) {
     window.open(xUrl, "_blank");
 }
 
+function shareCurrentResult() {
+    shareResult(currentResultType);
+}
+
 function setupShareButton(id, resultType) {
     addClickListener(id, () => {
         shareResult(resultType);
@@ -1314,9 +1383,9 @@ function setupShareButtons() {
         "timeup"
     );
 
-    setupShareButton(
+    addClickListener(
         "clear-share-btn",
-        "clear"
+        shareCurrentResult
     );
 }
 
@@ -1394,18 +1463,6 @@ function isGameRunning() {
     );
 }
 
-function setupTimeupButtons() {
-    addClickListener(
-        "timeup-retry-btn",
-        handleTimeupRetry
-    );
-
-    addClickListener(
-        "timeup-title-btn",
-        returnToTitle
-    );
-}
-
 function restartGame() {
     resetStageRotationState();
 
@@ -1424,7 +1481,7 @@ function handleTimeupRetry() {
     playWebAudio("select");
 
     fadeToBlack(() => {
-        hideTimeupOverlay();
+        hideClearOverlay();
         restartGame();
     });
 }
@@ -1437,10 +1494,6 @@ function hideOverlay(id) {
 
     overlay.style.opacity = "0";
     overlay.style.display = "none";
-}
-
-function hideTimeupOverlay() {
-    hideOverlay("timeup-overlay");
 }
 
 function resetStageRotationState() {
@@ -1486,13 +1539,22 @@ function setupClearButtons() {
 
     addClickListener(
         "clear-retry-btn",
-        handleClearRetry
+        handleResultRetry
     );
 
     addClickListener(
         "clear-title-btn",
         returnToTitle
     );
+}
+
+function handleResultRetry() {
+    if (currentResultType === "timeup") {
+        handleTimeupRetry();
+        return;
+    }
+
+    handleClearRetry();
 }
 
 function handleClearTest() {
@@ -1958,7 +2020,6 @@ function setupTitleButtons() {
 function setupEvents() {
     setupShareButtons();
     setupSoundButtons();
-    setupTimeupButtons();
     setupClearButtons();
 
     setupRotationButtons();
@@ -2385,10 +2446,7 @@ function handleGameClear() {
     } = calculateClearResult();
 
     const isNewRecord =
-    updateScoreDisplay(finalScore);
-
-    window.lastClearWasNewRecord =
-    true;
+        updateScoreDisplay(finalScore);
 
     const isFirstExtraUnlock =
         !isTutorialMode &&
@@ -2440,7 +2498,8 @@ if (isFirstExtraUnlock) {
                 showClearOverlay(
                     finalScore,
                     timeBonus,
-                    clearBonus
+                    clearBonus,
+                    isNewRecord
                 );
 
                 const extraUnlockEl =
@@ -2471,7 +2530,8 @@ if (clearMessage) {
             showClearOverlay(
                 finalScore,
                 timeBonus,
-                clearBonus
+                clearBonus,
+                isNewRecord
             );
         });
     }
