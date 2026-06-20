@@ -565,10 +565,9 @@ button {
 }
 
 /* ========================================================
-   TIME UP / CLEAR overlay
+   RESULT overlay
 ======================================================== */
 
-#timeup-overlay,
 #clear-overlay {
     position: absolute;
     inset: 0;
@@ -583,7 +582,6 @@ button {
     transition: opacity 0.35s ease;
 }
 
-.timeup-card,
 .clear-card {
     text-align: center;
 
@@ -594,21 +592,14 @@ button {
     border-radius: 20px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     box-sizing: border-box;
-}
 
-.timeup-card {
-    background: rgba(30, 30, 30, 0.96);
-    border: 2px solid #ff4444;
+   background: rgba(28, 36, 30, 0.96);
+    border: 2px solid #4CAF50;
+
     display: flex;
     flex-direction: column;
 }
 
-.clear-card {
-    background: rgba(28, 36, 30, 0.96);
-    border: 2px solid #4CAF50;
-}
-
-.timeup-card h2,
 .clear-card h2 {
     margin: 0 0 8px;
     font-size: 32px;
@@ -616,24 +607,15 @@ button {
     letter-spacing: 0.06em;
 }
 
-.timeup-card h2 {
-    color: #ff4444;
-}
-
 .clear-card h2 {
     color: #4CAF50;
 }
 
-.timeup-card p,
 .clear-card p {
     margin: 0 0 8px;
     color: #aaa;
     font-size: 16px;
     line-height: 1.3;
-}
-
-.timeup-card p {
-    margin-bottom: 24px;
 }
 
 .result-score {
@@ -643,11 +625,6 @@ button {
     gap: 10px;
 
     margin-bottom: 6px;
-}
-
-/* TIME UP専用 */
-.timeup-card .result-score {
-    margin-bottom: 28px;
 }
 
 .score-label {
@@ -768,32 +745,32 @@ button {
 
     margin-bottom: 0;
 
-    transform: translateX(75px);
+    transform: translateX(50px);
 }
 
-.clear-card.tutorial-clear {
-    display: flex;
-    flex-direction: column;
+.clear-card.timeup-result {
+    background: rgba(30, 30, 30, 0.96);
+    border-color: #ff4444;
+}
+
+.clear-card.timeup-result h2 {
+    color: #ff4444;
 }
 
 /* ========================================================
    結果画面ボタン
 ======================================================== */
 
-.clear-buttons,
-.timeup-buttons {
+.clear-buttons {
     display: flex;
     gap: 10px;
     justify-content: center;
     width: 100%;
-}
 
-.timeup-card .timeup-buttons {
     margin-top: auto;
 }
 
-.clear-buttons button,
-.timeup-buttons button {
+.clear-buttons button {
     flex: 1;
     height: 52px;
 
@@ -808,23 +785,16 @@ button {
     letter-spacing: -0.05em;
 }
 
-#clear-retry-btn,
-#timeup-retry-btn {
+#clear-retry-btn {
     background: #4CAF50 !important;
 }
 
-#clear-title-btn,
-#timeup-title-btn {
+#clear-title-btn {
     background: #ef4444 !important;
 }
 
-#clear-share-btn,
-#timeup-share-btn {
+#clear-share-btn {
     background: #38bdf8 !important;
-}
-
-.clear-card.tutorial-clear .clear-buttons {
-    margin-top: auto;
 }
 
 /* ========================================================
@@ -922,6 +892,3 @@ button {
 
     transition: opacity 0.35s ease;
 }
-
-
-
