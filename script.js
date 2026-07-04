@@ -6,6 +6,22 @@ const DIFFICULTY = {
     EXTRA: 8
 };
 
+function getTimeLimitSeconds() {
+    if (isTutorialMode) {
+        return 999;
+    }
+
+    if (SIZE === DIFFICULTY.HARD) {
+        return 170;
+    }
+
+    if (SIZE === DIFFICULTY.EXTRA) {
+        return 200;
+    }
+
+    return 120;
+}
+
 let selectedDifficulty =
     Number(
         localStorage.getItem("cube_difficulty")
@@ -461,12 +477,12 @@ function startGameTimer() {
     clearInterval(timerId);
 
     if (isTutorialMode) {
-        timeLeft = 999;
+        timeLeft = getTimeLimitSeconds();
         updateTimerUI();
         return;
     }
 
-    timeLeft = 120;
+    timeLeft = getTimeLimitSeconds();
     updateTimerUI();
 
     timerId = setInterval(countdown, 1000);
@@ -1521,13 +1537,23 @@ function addClickListener(id, handler) {
 
 function setupRotationButtons() {
     addClickListener(
-        "rot-z-btn",
-        handleRotateZButtonClick
+        "rot-left-btn",
+        () => handleRotateButtonClick(rotateBlockCoordinatesX180)
     );
 
     addClickListener(
-        "rot-y-btn",
-        handleRotateYButtonClick
+        "rot-right-btn",
+        () => handleRotateButtonClick(rotateBlockCoordinatesZ180)
+    );
+
+    addClickListener(
+        "rot-up-btn",
+        () => handleRotateButtonClick(rotateBlockCoordinatesInvert180)
+    );
+
+    addClickListener(
+        "rot-down-btn",
+        () => handleRotateButtonClick(rotateBlockCoordinatesY180)
     );
 }
 
@@ -1689,37 +1715,51 @@ function setupGameButtons() {
     );
 }
 
-function handleRotateZButtonClick() {
-    initAudioSystem();
-
-    if (isGameOver || isPaused) return;
-
-    playWebAudio("select");
-    triggerResizeAndRefresh();
-}
-
-function handleRotateYButtonClick() {
+function handleRotateButtonClick(rotateFn) {
     initAudioSystem();
 
     if (isGameOver || isPaused) return;
 
     playWebAudio("select");
 
-    rotateCubeAroundY();
-}
-
-function rotateCubeAroundY() {
-    const { dynamicCubeSize, offset } = getDynamicSizes();
-
+    const sizes = getDynamicSizes();
     const visibleBlocks = getVisibleBlocks();
 
-    rotateBlockCoordinatesY();
+    rotateFn();
 
-    updateVisibleBlockPositions(
+    updateVisibleBlockPositionsNextFrame(
         visibleBlocks,
-        offset,
-        dynamicCubeSize
+        sizes
     );
+}
+
+function rotateBlockCoordinatesZ180() {
+    blocks.forEach(block => {
+        block.x = (SIZE - 1) - block.x;
+        block.y = (SIZE - 1) - block.y;
+    });
+}
+
+function rotateBlockCoordinatesY180() {
+    blocks.forEach(block => {
+        block.y = (SIZE - 1) - block.y;
+        block.z = (SIZE - 1) - block.z;
+    });
+}
+
+function rotateBlockCoordinatesX180() {
+    blocks.forEach(block => {
+        block.x = (SIZE - 1) - block.x;
+        block.z = (SIZE - 1) - block.z;
+    });
+}
+
+function rotateBlockCoordinatesInvert180() {
+    blocks.forEach(block => {
+        block.x = (SIZE - 1) - block.x;
+        block.y = (SIZE - 1) - block.y;
+        block.z = (SIZE - 1) - block.z;
+    });
 }
 
 function updateVisibleBlockPositions(
@@ -1790,11 +1830,7 @@ function selectDifficulty(size) {
 }
 
 function prepareTimerForSelectedMode() {
-    if (isTutorialMode) {
-        timeLeft = 999;
-    } else {
-        timeLeft = 120;
-    }
+    timeLeft = getTimeLimitSeconds();
 
     updateTimerUI();
 }
@@ -2083,28 +2119,6 @@ function resumeGame(pauseOverlay) {
 }
 
 /*gpt提案、左右回転の改善*/
-function triggerResizeAndRefresh() {
-    const sizes = getDynamicSizes();
-
-    const visibleBlocks = getVisibleBlocks();
-
-    rotateBlockCoordinatesZ();
-
-    updateVisibleBlockPositionsNextFrame(
-        visibleBlocks,
-        sizes
-    );
-}
-
-function rotateBlockCoordinatesZ() {
-    blocks.forEach(block => {
-        const oldX = block.x;
-
-        block.x = block.y;
-        block.y = (SIZE - 1) - oldX;
-    });
-}
-
 function updateVisibleBlockPositionsNextFrame(
     visibleBlocks,
     sizes
@@ -2182,7 +2196,8 @@ function updateTimerUI() {
     document.getElementById("timer-text").innerText =
         `残り時間 ${timeLeft} 秒`;
 
-    const percentage = (timeLeft / 120) * 100;
+    const timeLimit = getTimeLimitSeconds();
+    const percentage = (timeLeft / timeLimit) * 100;
     const bar = document.getElementById("timer-bar");
 
     if (bar) {

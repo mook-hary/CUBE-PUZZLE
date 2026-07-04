@@ -222,6 +222,25 @@ button {
     width: 100%;
 }
 
+#rotate-hint {
+    font-size: 0.95cqw;
+    font-weight: bold;
+    color: #0077b6;
+    letter-spacing: -0.02em;
+    margin: 0.05cqw 0;
+}
+
+#rotate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45cqw;
+    width: 100%;
+}
+
+#rotate-grid button {
+    width: 100% !important;
+}
+
 #button-grid button {
     width: 100% !important;
 }
