@@ -251,6 +251,38 @@ button {
     padding: 0.8cqw 0.4cqw;
     flex: 1;
     white-space: nowrap;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 回転ボタン矢印（共通） */
+.rot-btn span {
+    display: block;
+    flex-shrink: 0;
+    width: 0.85cqw;
+    height: 0.85cqw;
+    box-sizing: border-box;
+    border-top: 0.22cqw solid currentColor;
+    border-left: 0.22cqw solid currentColor;
+}
+
+/* 回転ボタン矢印（方向） */
+.arrow-up span {
+    transform: rotate(-45deg);
+}
+
+.arrow-down span {
+    transform: rotate(135deg);
+}
+
+.arrow-left span {
+    transform: rotate(-135deg);
+}
+
+.arrow-right span {
+    transform: rotate(45deg);
 }
 
 #pause-btn {
